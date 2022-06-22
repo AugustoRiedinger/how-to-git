@@ -230,3 +230,23 @@ The most powerful feature about git is being able to track the changes in your p
 #+begin_src bash
 $ git add .
 #+end_src
+
+ + Commit them with
+
+#+begin_src bash
+$ git commit -m "Comment about the changes made"
+#+end_src
+
+ + And finally upload them to the remote repo
+
+#+begin_src bash
+$ git push origin master
+#+end_src
+
+You will be asked again for the passphrase. And that's all. With those three simple commands you can upload any changes you make to the local repository. Of course, you can stack multiple commits in your local repository and then upload them all at once, but after creating the repository, you shall only memorize this three commands and you are good to go. You can create =alias= to make them a little bit simpler:
+
+ + =alias addall 'git add .'=
+ + =alias commit 'git commit -m'=
+ + =alias push 'git push origin master'=
+
+Or bash or fish functions to give them a little bit more of flexibility. Anyways, with these simple steps and once you set it up, you can work on your own git project with little to no trouble.
