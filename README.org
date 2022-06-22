@@ -250,3 +250,15 @@ You will be asked again for the passphrase. And that's all. With those three sim
  + =alias push 'git push origin master'=
 
 Or bash or fish functions to give them a little bit more of flexibility. Anyways, with these simple steps and once you set it up, you can work on your own git project with little to no trouble.
+
+Finally, in order to download an entire repository you can do it with
+
+#+begin_src bash
+$ git clone YourRepoURL
+#+end_src
+
+And if you are working with other people or in more than one computer, remember to update the changes with
+
+#+begin_src bash
+$ git pull origin master
+#+end_src
