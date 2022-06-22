@@ -1,0 +1,187 @@
+#+TITLE: SETTING UP AND USING GIT
+#+AUTHOR: A. Riedinger
+#+STARTUP: folded
+
+* CONTENTS :toc:
+- [[#getting-started---what-is-git][GETTING STARTED - WHAT IS GIT?]]
+  - [[#snapshots-not-differences][SNAPSHOTS, NOT DIFFERENCES]]
+  - [[#nearly-every-operation-is-local][NEARLY EVERY OPERATION IS LOCAL]]
+  - [[#the-three-states][THE THREE STATES]]
+- [[#setting-up-git-in-you-machine][SETTING UP GIT IN YOU MACHINE]]
+  - [[#dependencies][DEPENDENCIES]]
+  - [[#generating-a-token][GENERATING A TOKEN]]
+  - [[#creating-a-remote-client][CREATING A REMOTE CLIENT]]
+  - [[#adding-the-ssh-key-to-github][ADDING THE SSH KEY TO GITHUB]]
+- [[#creating-your-first-git-repository][CREATING YOUR FIRST GIT REPOSITORY]]
+
+* GETTING STARTED - WHAT IS GIT?
+So, what is Git in a nutshell? This is an important section to absorb, because if you understand what Git is and the fundamentals of how it works, then using Git effectively will probably be much easier for you. As you learn Git, try to clear your mind of the things you may know about other VCSs, such as CVS, Subversion or Perforce — doing so will help you avoid subtle confusion when using the tool. Even though Git’s user interface is fairly similar to these other VCSs, Git stores and thinks about information in a very different way, and understanding these differences will help you avoid becoming confused while using it.
+
+** SNAPSHOTS, NOT DIFFERENCES
+The major difference between Git and any other VCS (Subversion and friends included) is the way Git thinks about its data. Conceptually, most other systems store information as a list of file-based changes. These other systems (CVS, Subversion, Perforce, Bazaar, and so on) think of the information they store as a set of files and the changes made to each file over time (this is commonly described as delta-based version control).
+
+#+CAPTION:
+#+LABEL:fig:deltas
+[[file:images/deltas.png]]
+
+Git doesn’t think of or store its data this way. Instead, Git thinks of its data more like a series of snapshots of a miniature filesystem. With Git, every time you commit, or save the state of your project, Git basically takes a picture of what all your files look like at that moment and stores a reference to that snapshot. To be efficient, if files have not changed, Git doesn’t store the file again, just a link to the previous identical file it has already stored. Git thinks about its data more like a *stream of snapshots*.
+
+#+CAPTION:
+#+LABEL:fig:snapshots
+[[file:images/snapshots.png]]
+
+This is an important distinction between Git and nearly all other VCSs. It makes Git reconsider almost every aspect of version control that most other systems copied from the previous generation. This makes Git more like a mini filesystem with some incredibly powerful tools built on top of it, rather than simply a VCS. We’ll explore some of the benefits you gain by thinking of your data this way when we cover Git branching in Git Branching.
+
+** NEARLY EVERY OPERATION IS LOCAL
+Most operations in Git need only local files and resources to operate — generally no information is needed from another computer on your network. If you’re used to a CVCS where most operations have that network latency overhead, this aspect of Git will make you think that the gods of speed have blessed Git with unworldly powers. Because you have the entire history of the project right there on your local disk, most operations seem almost instantaneous.
+
+For example, to browse the history of the project, Git doesn’t need to go out to the server to get the history and display it for you — it simply reads it directly from your local database. This means you see the project history almost instantly. If you want to see the changes introduced between the current version of a file and the file a month ago, Git can look up the file a month ago and do a local difference calculation, instead of having to either ask a remote server to do it or pull an older version of the file from the remote server to do it locally.
+
+This also means that there is very little you can’t do if you’re offline or off VPN. If you get on an airplane or a train and want to do a little work, you can commit happily (to your local copy, remember?) until you get to a network connection to upload. If you go home and can’t get your VPN client working properly, you can still work. In many other systems, doing so is either impossible or painful. In Perforce, for example, you can’t do much when you aren’t connected to the server; in Subversion and CVS, you can edit files, but you can’t commit changes to your database (because your database is offline). This may not seem like a huge deal, but you may be surprised what a big difference it can make.
+
+Everything in Git is checksummed before it is stored and is then referred to by that checksum. This means it’s impossible to change the contents of any file or directory without Git knowing about it. This functionality is built into Git at the lowest levels and is integral to its philosophy. You can’t lose information in transit or get file corruption without Git being able to detect it.
+
+The mechanism that Git uses for this checksumming is called a SHA-1 hash. This is a 40-character string composed of hexadecimal characters (0–9 and a–f) and calculated based on the contents of a file or directory structure in Git. A SHA-1 hash looks something like this:
+
+#+begin_src bash
+24b9da6552252987aa493b52f8696cd6d3b00373
+#+end_src
+
+You will see these hash values all over the place in Git because it uses them so much. In fact, Git stores everything in its database not by file name but by the hash value of its contents.
+** THE THREE STATES
+Git has three main states that your files can reside in: modified, staged, and committed:
+
+ + *Modified*: means that you have changed the file but have not committed it to your database yet.
+ + *Staged*: means that you have marked a modified file in its current version to go into your next commit snapshot.
+ + *Committed*: means that the data is safely stored in your local database.
+
+This leads us to the three main sections of a Git project: the working tree, the staging area, and the Git directory.
+
+#+CAPTION:
+#+LABEL:fig:areas
+[[file:images/areas.png]]
+
+The working tree is a single checkout of one version of the project. These files are pulled out of the compressed database in the Git directory and placed on disk for you to use or modify.
+
+The staging area is a file, generally contained in your Git directory, that stores information about what will go into your next commit. Its technical name in Git parlance is the “index”, but the phrase “staging area” works just as well.
+
+The Git directory is where Git stores the metadata and object database for your project. This is the most important part of Git, and it is what is copied when you clone a repository from another computer.
+
+The basic Git workflow goes something like this:
+
+ 1. You modify files in your working tree.
+ 1. You selectively stage just those changes you want to be part of your next commit, which adds only those changes to the staging area.
+ 1. You do a commit, which takes the files as they are in the staging area and stores that snapshot permanently to your Git directory.
+
+    If a particular version of a file is in the Git directory, it’s considered *committed*. If it has been modified and was added to the staging area, it is *staged*. And if it was changed since it was checked out but has not been staged, it is *modified*.
+* SETTING UP GIT IN YOU MACHINE
+Before going ahead and creating your first git repository, there are a few things to consider. This guide for setting up Git is given for [[github.com][Github]], but you do have other options such as [[https://gitlab.com/gitlab-com][Gitlab]] or [[https://bitbucket.org/][Bitbucket]]. You should find what suits your neccesities better and first of all create an account there.
+
+** DEPENDENCIES
+We will of course need =git= installed in our computers. We will also need =ssh= in order authenticate remote machines or servers:
+
+ + For Arch based distros
+
+   #+begin_src bash
+$ sudo pacman -S git openssh
+   #+end_src
+
+ + For Debian based distros
+
+   #+begin_src bash
+$ sudo apt install git openssh
+   #+end_src
+** GENERATING A TOKEN
+This step is neccesary *only* if you will use [[github.com][Github]]. By now, you should have created an account there. You should now access the tokens entry at [[https://github.com/settings/tokens]].
+
+ + Press =Generate new token=.
+ + In =Note= write a name for the token. =Supertoken= is a nice name, as this token will control everything in your git workflow, but you can name it as you please.
+ + In =Expiration= select =No expiration=.
+ + Mark all the boxes below for the =scopes=. Again, this token will control *everything*.
+
+Click on generate and you will have your new token. Make sure to copy and save it somewhere safe, as git won't show it to you again. You may need it in the future. Nonetheless, you can always delete it and create a new token as desired.
+** CREATING A REMOTE CLIENT
+Using the SSH protocol, you can connect and authenticate to remote servers and services. With SSH keys, you can connect to GitHub without supplying your username and personal access token at each visit. If you decide not to do this step, every time you try to push something, Git will ask you not only for your username (which is easy) but also for your *token*. This is incredibly annoying, as tokens are impossible to memorize, and you don't want to copy and paste it everytime you push. Of course, you can create a bash function to copy automatically to your clipboard the token everytime you push, we've all been there, but it is not the most elegant of solutions. Here, we will set up git with ssh in every computer to solve that.
+
+*** GENERATING A SSH KEY
+When you set up SSH, you will need to generate a new SSH key and add it to the ssh-agent. You must add the SSH key to your account on GitHub before you use the key to authenticate. If you don't already have an SSH key, you must generate a new SSH key to use for authentication:
+
+#+begin_src bash
+$ ssh-keygen -t ed25519 -C "your_email@example.com"
+#+end_src
+
+This creates a new SSH key, using the provided email as a label. You should have this output
+
+#+begin_src bash
+> Generating public/private algorithm key pair.
+#+end_src
+
+When you're prompted to "Enter a file in which to save the key," press Enter. This accepts the default file location.
+
+#+begin_src bash
+> Enter a file in which to save the key (/home/you/.ssh/algorithm): [Press enter]
+#+end_src
+
+At the prompt, type a secure passphrase. This is nothing more that a /password/ that git will ask everytime you push. Beats the hell out of having to insert your token and username.
+
+#+begin_src bash
+> Enter passphrase (empty for no passphrase): [Type a passphrase]
+> Enter same passphrase again: [Type passphrase again]
+#+end_src
+*** ADDING YOU SSH KEY TO THE SSH-AGENT
+Before adding a new SSH key to the ssh-agent to manage your keys, you should have checked for existing SSH keys and generated a new SSH key.
+
+First, we need to start the =ssh-agent= in the background:
+
+#+begin_src bash
+$ eval "$(ssh-agent -s)"
+> Agent pid 59566
+#+end_src
+
+If you don't see any output or an error, you can also do:
+
+#+begin_src bash
+$ ssh-agent /bin/sh
+#+end_src
+
+Now, you can add your SSH private key to the ssh-agent. If you created your key with a different name, or if you are adding an existing key that has a different name, replace id_ed25519 in the command with the name of your private key file.
+
+#+begin_src bash
+$ ssh-add ~/.ssh/id_ed25519
+#+end_src
+** ADDING THE SSH KEY TO GITHUB
+To configure your account on GitHub.com to use your new (or existing) SSH key, you'll also need to add the key to your account.
+
+After adding a new SSH key to your account on GitHub.com, you can reconfigure any local repositories to use SSH.
+
+First, copy the SSH public key to your clipboard. If your SSH public key file has a different name than the example code, modify the filename to match your current setup. When copying your key, don't add any newlines or whitespace.
+
+#+begin_src bash
+$ cat ~/.ssh/id_ed25519.pub
+# Then select and copy the contents of the id_ed25519.pub file
+# displayed in the terminal to your clipboard
+#+end_src
+
+In the upper-right corner of any page, click your profile photo, then click =Settings=.
+
+#+CAPTION:
+#+LABEL:fig:userbar-account-settings
+[[file:images/userbar-account-settings.png]]
+
+In the =Access= section of the sidebar, click =SSH and GPC keys=. Then click =New SSH key= or =Add SSH key=.
+
+#+CAPTION:
+#+LABEL:fig:ssh-add-ssh-key
+[[file:images/ssh-add-ssh-key.png]]
+
+In the =Title= field, add a descriptive label for the new key and paste your key into the =Key= field.
+
+#+CAPTION:
+#+LABEL:fig:ssh-key-paste
+[[file:images/ssh-key-paste.png]]
+
+Click =Add SSH key= and if prompted with your Github password provide it.
+
+Remember that you will have to do this procedure in each computer you use, but just once.
+* CREATING YOUR FIRST GIT REPOSITORY
+We are all ready to create a new git repository!
