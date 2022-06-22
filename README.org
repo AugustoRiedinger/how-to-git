@@ -12,7 +12,9 @@
   - [[#generating-a-token][GENERATING A TOKEN]]
   - [[#creating-a-remote-client][CREATING A REMOTE CLIENT]]
   - [[#adding-the-ssh-key-to-github][ADDING THE SSH KEY TO GITHUB]]
-- [[#creating-your-first-git-repository][CREATING YOUR FIRST GIT REPOSITORY]]
+- [[#working-with-git][WORKING WITH GIT]]
+  - [[#creating-your-git-repository][CREATING YOUR GIT REPOSITORY]]
+  - [[#tracking][TRACKING]]
 
 * GETTING STARTED - WHAT IS GIT?
 So, what is Git in a nutshell? This is an important section to absorb, because if you understand what Git is and the fundamentals of how it works, then using Git effectively will probably be much easier for you. As you learn Git, try to clear your mind of the things you may know about other VCSs, such as CVS, Subversion or Perforce — doing so will help you avoid subtle confusion when using the tool. Even though Git’s user interface is fairly similar to these other VCSs, Git stores and thinks about information in a very different way, and understanding these differences will help you avoid becoming confused while using it.
@@ -82,15 +84,15 @@ We will of course need =git= installed in our computers. We will also need =ssh=
 
  + For Arch based distros
 
-   #+begin_src bash
+#+begin_src bash
 $ sudo pacman -S git openssh
-   #+end_src
+#+end_src
 
  + For Debian based distros
 
-   #+begin_src bash
+#+begin_src bash
 $ sudo apt install git openssh
-   #+end_src
+#+end_src
 ** GENERATING A TOKEN
 This step is neccesary *only* if you will use [[github.com][Github]]. By now, you should have created an account there. You should now access the tokens entry at [[https://github.com/settings/tokens]].
 
@@ -183,5 +185,48 @@ In the =Title= field, add a descriptive label for the new key and paste your key
 Click =Add SSH key= and if prompted with your Github password provide it.
 
 Remember that you will have to do this procedure in each computer you use, but just once.
-* CREATING YOUR FIRST GIT REPOSITORY
-We are all ready to create a new git repository!
+* WORKING WITH GIT
+** CREATING YOUR GIT REPOSITORY
+We are all ready to create a new git repository! Go to your git profile and to the tab repositories, then press the =New= button.
+
+#+CAPTION:
+#+LABEL:fig:repo
+[[file:images/repo.png]]
+
+You should be prompted with a tab like this:
+
+#+CAPTION:
+#+LABEL:fig:repo2
+[[file:images/repo2.png]]
+
+Here you can chose a =Repository name= and =Description= depending on the project you are working on. Also, you can chose between the repository being =Public= or =Private=. Keep in mind that a =Private= repository only allows three editors (without paying the subscription, of course). You can also add a =.gitignore= template in order to never track certain types of files. When you are ready, press =Create repository=.
+
+#+CAPTION:
+#+LABEL:fig:template
+[[file:images/template.png]]
+
+Now you have a template for how can you start your project. I recommend though following this steps:
+
+ + =cd= to the folder you intent to track with git.
+ + Initialize a local git project with =git init=.
+ + Add all the initial files with =git add .=.
+ + Make the first commit =git commit -m "Initial commit"=.
+ + Add the project to the remote repository with =git remote add origin https://github.com/YourUsername/YourProject.git=.
+ + Connect via =ssh= with =ssh -T git@github.com=. Here, you will be asked to put the /passphrase/ that you set up before.
+ + Add your computer to the project =git remote set-url origin git@github.com:YourUsername/YourProject.git=.
+
+You are all ready now to push everything to the remote repository
+
+#+begin_src bash
+$ git push -u origin master
+#+end_src
+
+After entering your passphrase again, everything will be ready. You can reload the Github.com page to see the changes.
+** TRACKING
+The most powerful feature about git is being able to track the changes in your projects. The set up in the previous section must be done *just the first time*, you workflow now should go as follows:
+
+ + After making a /considerable/ change in your files (you won't be commiting every little change you make), you can should them to your local repository
+
+#+begin_src bash
+$ git add .
+#+end_src
