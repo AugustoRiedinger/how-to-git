@@ -225,7 +225,7 @@ After entering your passphrase again, everything will be ready. You can reload t
 ** TRACKING
 The most powerful feature about git is being able to track the changes in your projects. The set up in the previous section must be done *just the first time*, you workflow now should go as follows:
 
- + After making a /considerable/ change in your files (you won't be commiting every little change you make), you can should them to your local repository
+ + After making a /considerable/ change in your files (you won't be commiting every little change you make), you should add them to your local repository
 
 #+begin_src bash
 $ git add .
